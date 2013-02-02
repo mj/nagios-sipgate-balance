@@ -49,8 +49,14 @@ my $url = sprintf("https://%s:%s\@samurai.sipgate.net/RPC2",
                   $options->password);
 my $client = Frontier::Client->new(url => $url);
 
-my $result = $client->call("samurai.BalanceGet");
-my $balance =  $result->{'CurrentBalance'}->{'TotalIncludingVat'};
+my $result;
+eval { 
+  $result = $client->call("samurai.BalanceGet");
+};
+
+$plugin->nagios_die("sipgate request failed") if $@;
+
+my $balance = $result->{'CurrentBalance'}->{'TotalIncludingVat'};
 
 $plugin->add_perfdata(
     label => "balance",
